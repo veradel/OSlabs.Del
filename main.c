@@ -1,54 +1,54 @@
 #include <stdio.h>
 #include <pthread.h>
-#define MAX 3 //Количетсво производимого
+#define MAX 3 
 pthread_mutex_t the_mutex;
-pthread_cond_t condc, condp; //Используется для сигнализации
-int buffer = 0; //Буфер между производителем и потребителем
+pthread_cond_t condc, condp; 
+int buffer = 0; 
 
 void *producer(void *ptr){
     for(int i = 1; i <= MAX; i++){
-        pthread_mutex_lock(&the_mutex); //Получение исключительного доступа к буферу
+        pthread_mutex_lock(&the_mutex); 
 
         while(buffer != 0){
             pthread_cond_wait(&condp,&the_mutex);
             printf("Пробуждение производителя\n");
         }
 
-        buffer = i; //Помещение записи в буфер
-        printf("Производитель №%d\n",i); //Вывод
-        pthread_cond_signal(&condc); //Активизация потребителя
-        pthread_mutex_unlock(&the_mutex); //Освобождение доступа к буферу
+        buffer = i; 
+        printf("Производитель №%d\n",i); 
+        pthread_cond_signal(&condc); 
+        pthread_mutex_unlock(&the_mutex); 
     }
-    pthread_exit(0); //Завершение текущего потока
+    pthread_exit(0); 
 }
 
 void *consumer(void *ptr){
     for(int i = 1; i <= MAX; i++){
-        pthread_mutex_lock(&the_mutex); //Получение исключительного доступа к буферу
+        pthread_mutex_lock(&the_mutex); 
 
         while(buffer == 0){
             pthread_cond_wait(&condc,&the_mutex);
             printf("Пробуждение потребителя\n");
         }
 
-        buffer = 0; //Извличение
+        buffer = 0; 
         printf("Потребитель №%d\n", i);
-        pthread_cond_signal(&condp); //Активизация производителя
-        pthread_mutex_unlock(&the_mutex); //Освобождение доступа к буферу
+        pthread_cond_signal(&condp); 
+        pthread_mutex_unlock(&the_mutex); 
     }
-    pthread_exit(0); //Завершение текущего потока
+    pthread_exit(0); 
 }
 
 int main(int argc, char **argv){
     pthread_t pro, con;
-    pthread_mutex_init(&the_mutex,0); //Создаём мьютекс
-    pthread_cond_init(&condc,0); //Создание условной переменной condc
-    pthread_cond_init(&condp,0); //Создание условной переменной condp
-    pthread_create(&con,0,consumer,0); //Создание потока, который будет исполнять функцию consumer(Потребитель)
-    pthread_create(&pro,0,producer,0); //Создание потока, который будет исполнять функцию producer(Производитель)
-    pthread_join(pro,0); //Ждём завершения потока pro
-    pthread_join(con,0); //Ждём завершения потока con
-    pthread_cond_destroy(&condc); //Удаление условной переменной condc
-    pthread_cond_destroy(&condp); //Удаление условной переменной condp
-    pthread_mutex_destroy(&the_mutex); //Удаление мьютекса
+    pthread_mutex_init(&the_mutex,0);
+    pthread_cond_init(&condc,0);
+    pthread_cond_init(&condp,0);
+    pthread_create(&con,0,consumer,0); 
+    pthread_create(&pro,0,producer,0);
+    pthread_join(pro,0);
+    pthread_join(con,0);
+    pthread_cond_destroy(&condc);
+    pthread_cond_destroy(&condp);
+    pthread_mutex_destroy(&the_mutex); 
 }
