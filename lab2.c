@@ -22,18 +22,6 @@ void handle_signal(int sig) {
     }
 }
 
-void set_non_blocking(int fd) {
-    int flags = fcntl(fd, F_GETFL, 0);
-    if (flags == -1) {
-        perror("fcntl get");
-        exit(EXIT_FAILURE);
-    }
-    if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-        perror("fcntl set");
-        exit(EXIT_FAILURE);
-    }
-}
-
 int main() {
     int server_fd, client_fd, active_fd = -1;
     struct sockaddr_in server_addr, client_addr;
@@ -126,7 +114,6 @@ int main() {
 
             if (active_fd == -1) {
                 active_fd = client_fd;
-                set_non_blocking(active_fd);
             } else {
                 printf("Соединение разорвано\n");
                 close(client_fd);
